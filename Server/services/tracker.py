@@ -27,3 +27,21 @@ class Tracker:
         db.refresh(run)
         db.close()
         return run
+    
+    def log_param(self, run_id:str, key:str, value:str):
+        db = SessionLocal()
+        param = Param(run_id = run_id, key = key, value = str(value))
+        db.add(param)
+        db.commit()
+        db.refresh(param)
+        db.close()
+        return param
+    
+    def log_metric(self, run_id:str, key:str, value:float, step: int = 0):
+        db = SessionLocal()
+        metric = Metric(run_id = run_id, key = key, value = float(value), step = step)
+        db.add(metric)
+        db.commit()
+        db.refresh(metric)
+        db.close()
+        return metric
