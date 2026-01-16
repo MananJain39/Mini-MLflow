@@ -18,3 +18,12 @@ class Tracker:
             return exp
         finally:
             db.close()
+
+    def start_run(self, experiment_id:str):
+        db = SessionLocal()
+        run = Run(experiment_id = experiment_id)
+        db.add(run)
+        db.commit()
+        db.refresh(run)
+        db.close()
+        return run
