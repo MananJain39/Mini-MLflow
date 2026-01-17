@@ -17,3 +17,6 @@ t.log_metric(run.id, "mt2", 1.2356, step = 1)
 
 print("Metric working")
 
+t.log_artifact(run.id, "test.txt")
+print("Artifacts ok")
+

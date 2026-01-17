@@ -1,6 +1,8 @@
 from datetime import datetime
 from Server.DB.models import Experiment, Run, Param, Metric, Artifact
 from Server.DB.session import SessionLocal, get_db
+import os
+import shutil
 
 class Tracker:
 
@@ -10,7 +12,7 @@ class Tracker:
             exp = db.query(Experiment).filter_by(name = name).first()
             if exp:
                 return exp
-            
+
             exp = Experiment(name=name)
             db.add(exp) 
             db.commit() #INSERT
@@ -27,7 +29,7 @@ class Tracker:
         db.refresh(run)
         db.close()
         return run
-    
+
     def log_param(self, run_id:str, key:str, value:str):
         db = SessionLocal()
         param = Param(run_id = run_id, key = key, value = str(value))
@@ -36,7 +38,7 @@ class Tracker:
         db.refresh(param)
         db.close()
         return param
-    
+
     def log_metric(self, run_id:str, key:str, value:float, step: int = 0):
         db = SessionLocal()
         metric = Metric(run_id = run_id, key = key, value = float(value), step = step)
@@ -45,3 +47,21 @@ class Tracker:
         db.refresh(metric)
         db.close()
         return metric
+
+    ARTIFACT_ROOT = "storage/artifacts"
+    def log_artifact(self, run_id: str, file_path: str):
+        run_dir = os.path.join(self.ARTIFACT_ROOT, run_id)
+        os.makedirs(run_dir, exist_ok=True)
+
+        filename = os.path.basename(file_path)
+        dest = os.path.join(run_dir, filename)
+
+        shutil.copy(file_path, dest)
+
+        db = SessionLocal()
+        artifact = Artifact(run_id=run_id, path=dest)
+        db.add(artifact)
+        db.commit()
+        db.refresh(artifact)
+        db.close()
+        return artifact
