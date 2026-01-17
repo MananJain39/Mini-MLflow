@@ -29,6 +29,15 @@ class Tracker:
         db.refresh(run)
         db.close()
         return run
+    
+    def end_run(self, run_id:str):
+        db = SessionLocal()
+        run = db.query(Run).get(run_id)
+        run.end_time = datetime.utcnow()
+        run.status = "FINISHED"
+        db.commit()
+        db.refresh(run)
+        db.close()
 
     def log_param(self, run_id:str, key:str, value:str):
         db = SessionLocal()
