@@ -38,6 +38,7 @@ class Tracker:
         db.commit()
         db.refresh(run)
         db.close()
+        return run
 
     def log_param(self, run_id:str, key:str, value:str):
         db = SessionLocal()

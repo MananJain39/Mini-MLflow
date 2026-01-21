@@ -17,3 +17,15 @@ def start_run(request: StartRunRequest):
         "start_time": run.start_time,
         "status": run.status
     }
+
+class EndRunRequest(BaseModel):
+    run_id: str
+
+@router.post("/run/end")
+def end_run(request: EndRunRequest):
+    run = tracker.end_run(request.run_id)
+    return {
+        "id": run.id,
+        "end_time": run.end_time,
+        "status": run.status,
+    }
