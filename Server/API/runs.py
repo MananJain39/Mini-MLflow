@@ -27,5 +27,5 @@ def end_run(request: EndRunRequest):
     return {
         "id": run.id,
         "end_time": run.end_time,
-        "status": run.status,
+        "status": run.status
     }
