@@ -1,6 +1,8 @@
 from Server.services.tracker import Tracker
+import requests
 
 _tracker = Tracker()
+BASE_URL = "http://localhost:8000/api"
 _active_run = None
 _active_experiment = None
 
