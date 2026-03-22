@@ -20,15 +20,15 @@ def set_experiment(request: ExperimentRequest):
 @router.get("/experiments")
 def list_experiment():
     db = SessionLocal()
-    experiments = db.query(Experiment).all()
-    db.close()
-
-    return {
-        {
-        "id": exp.id, 
-        "name": exp.name,
-        "created_at": exp.created_at
-    }
-
-    for exp in experiments
-    }
+    try:
+        experiments = db.query(Experiment).all()
+        return [
+            {
+                "id": exp.id,
+                "name": exp.name,
+                "created_at": exp.created_at,
+            }
+            for exp in experiments
+        ]
+    finally:
+        db.close()
