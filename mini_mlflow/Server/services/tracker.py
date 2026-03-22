@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from Server.DB.models import Experiment, Run, Param, Metric, Artifact
 from Server.DB.session import SessionLocal
 import os
@@ -35,7 +35,7 @@ class Tracker:
         run = db.get(Run, run_id)
         if not run:
             raise ValueError(f"Run not found: {run_id}")
-        run.end_time = datetime.utcnow()
+        run.end_time = datetime.now(timezone.utc)
         run.status = "FINISHED"
         db.commit()
         db.refresh(run)
@@ -88,7 +88,6 @@ class Tracker:
 
         shutil.copy(file_path, dest)
 
-        db = SessionLocal()
         artifact = Artifact(run_id=run_id, path=dest)
         db.add(artifact)
         db.commit()
