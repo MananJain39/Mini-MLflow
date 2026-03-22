@@ -33,35 +33,37 @@ def end_run(request: EndRunRequest):
     return {"id": run.id, "end_time": run.end_time, "status": run.status}
 
 
-@router.get("/experiments/{experiments_id}/runs")
+@router.get("/experiments/{experiment_id}/runs")
 def list_runs(experiment_id: str):
     db = SessionLocal()
-    runs = db.query(Run).filter_by(experiment_id=experiment_id).all()
-    db.close()
-
-    return {
-        {
-            "run_id": run.id,
-            "status": run.status,
-            "start_time": run.start_time,
-            "end_time": run.end_time,
-        }
-        for run in runs
-    }
+    try:
+        runs = db.query(Run).filter_by(experiment_id=experiment_id).all()
+        return [
+            {
+                "run_id": run.id,
+                "status": run.status,
+                "start_time": run.start_time,
+                "end_time": run.end_time,
+            }
+            for run in runs
+        ]
+    finally:
+        db.close()
 
 
 @router.get("/runs/{run_id}")
 def get_details(run_id: str):
     db = SessionLocal()
-    params = db.query(Param).filer_by(run_id=run_id).all()
-    metrics = db.query(Metric).filer_by(run_id=run_id).all()
-    artifacts = db.query(Artifact).filer_by(run_id=run_id).all()
+    try:
+        params = db.query(Param).filter_by(run_id=run_id).all()
+        metrics = db.query(Metric).filter_by(run_id=run_id).all()
+        artifacts = db.query(Artifact).filter_by(run_id=run_id).all()
 
-    db.close()
-
-    return {
-        "run_id": run_id,
-        "params": [{"key": p.key, "value": p.value} for p in params],
-        "metrics": [{"key": m.key, "vlaue": m.value, "step": m.step} for m in metrics],
-        "artifacts": [{"path": a.path} for a in artifacts],
-    }
+        return {
+            "run_id": run_id,
+            "params": [{"key": p.key, "value": p.value} for p in params],
+            "metrics": [{"key": m.key, "value": m.value, "step": m.step} for m in metrics],
+            "artifacts": [{"path": a.path} for a in artifacts],
+        }
+    finally:
+        db.close()
