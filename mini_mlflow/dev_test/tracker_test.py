@@ -1,22 +1,73 @@
+from pathlib import Path
+
+from Server.DB.models import Artifact, Experiment, Metric, Param, Run
+from Server.DB.session import SessionLocal
 from Server.services.tracker import Tracker
 
-t = Tracker()
-e1 = t.get_or_create_experiment("exp1")
-# e2 = t.get_or_create_experiment("exp2")
-run = t.start_run(e1.id)
 
-print(run.id, run.status)  
+def _cleanup_experiment(experiment_name: str):
+    db = SessionLocal()
+    try:
+        run_ids = {
+            run.id
+            for run in db.query(Run)
+            .join(Run.experiment)
+            .filter_by(name=experiment_name)
+            .all()
+        }
 
-t.log_param(run.id, "lr", 1)
-t.log_param(run.id, "batch_size", 32)
+        if run_ids:
+            db.query(Artifact).filter(Artifact.run_id.in_(run_ids)).delete(
+                synchronize_session=False
+            )
+            db.query(Metric).filter(Metric.run_id.in_(run_ids)).delete(
+                synchronize_session=False
+            )
+            db.query(Param).filter(Param.run_id.in_(run_ids)).delete(
+                synchronize_session=False
+            )
+            db.query(Run).filter(Run.id.in_(run_ids)).delete(synchronize_session=False)
 
-print("Param Logged")
+        db.query(Experiment).filter_by(name=experiment_name).delete(synchronize_session=False)
+        db.commit()
+    finally:
+        db.close()
 
-t.log_metric(run.id, "mt", 1.234, step = 1)
-t.log_metric(run.id, "mt2", 1.2356, step = 1)
 
-print("Metric working")
+def test_tracker_logs_full_run(tmp_path):
+    tracker = Tracker()
+    exp_name = "tracker_test_exp"
+    artifact_file = tmp_path / "artifact.txt"
+    artifact_file.write_text("artifact-content", encoding="utf-8")
 
-t.log_artifact(run.id, "test.txt")
-print("Artifacts ok")
+    _cleanup_experiment(exp_name)
 
+    exp = tracker.get_or_create_experiment(exp_name)
+    run = tracker.start_run(exp.id)
+
+    tracker.log_param(run.id, "lr", 0.1)
+    tracker.log_metric(run.id, "mae", 1.23, step=1)
+    artifact = tracker.log_artifact(run.id, str(artifact_file))
+    ended = tracker.end_run(run.id)
+
+    db = SessionLocal()
+    try:
+        db_run = db.get(Run, run.id)
+        params = db.query(Param).filter_by(run_id=run.id).all()
+        metrics = db.query(Metric).filter_by(run_id=run.id).all()
+        artifacts = db.query(Artifact).filter_by(run_id=run.id).all()
+
+        assert db_run is not None
+        assert ended.status == "FINISHED"
+        assert db_run.status == "FINISHED"
+        assert len(params) == 1
+        assert params[0].key == "lr"
+        assert params[0].value == "0.1"
+        assert len(metrics) == 1
+        assert metrics[0].key == "mae"
+        assert metrics[0].step == 1
+        assert len(artifacts) == 1
+        assert Path(artifact.path).exists()
+    finally:
+        db.close()
+        _cleanup_experiment(exp_name)
