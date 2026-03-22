@@ -1,5 +1,5 @@
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 from sqlalchemy import Column,String, DateTime, Integer, Float, ForeignKey
 from sqlalchemy.orm import relationship
 from .session import Base
@@ -12,7 +12,7 @@ class Experiment(Base):
 
     id = Column(String, primary_key = True, default = gen_id)  #UUID as string
     name = Column(String, unique = True, index =True)
-    created_at = Column(DateTime, default = datetime.utcnow)
+    created_at = Column(DateTime, default = lambda: datetime.now(timezone.utc))
 
     runs = relationship("Run", back_populates="experiment")
 
@@ -21,7 +21,7 @@ class Run(Base):
 
     id = Column(String, primary_key = True, default = gen_id)
     experiment_id = Column(String, ForeignKey("experiments.id"))
-    start_time = Column(DateTime, default = datetime.utcnow)
+    start_time = Column(DateTime, default = lambda: datetime.now(timezone.utc))
     end_time = Column(DateTime, nullable = True)
     status = Column(String, default = "RUNNING")
 
