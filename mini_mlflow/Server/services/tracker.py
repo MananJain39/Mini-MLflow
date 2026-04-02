@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
-from Server.DB.models import Experiment, Run, Param, Metric, Artifact
-from Server.DB import session as db_session
+from mini_mlflow.Server.DB.models import Experiment, Run, Param, Metric, Artifact
+from mini_mlflow.Server.DB import session as db_session
 import os
 import shutil
 
@@ -94,3 +94,18 @@ class Tracker:
         db.refresh(artifact)
         db.close()
         return artifact
+
+    def log_tag(self, run_id: str, key: str, value: str):
+        db = db_session.SessionLocal()
+        try:
+            from mini_mlflow.Server.DB.models import Tag
+            run = db.get(Run, run_id)
+            if not run:
+                raise ValueError(f"Run not found: {run_id}")
+            tag = Tag(run_id=run_id, key=key, value=str(value))
+            db.add(tag)
+            db.commit()
+            db.refresh(tag)
+            return tag
+        finally:
+            db.close()
