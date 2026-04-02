@@ -62,27 +62,37 @@ class MiniMLflowClient:
             For any other non-2xx status.
         """
         url = f"{self.base_url}{path}"
-        try:
-            resp = self._session.request(
-                method, url, timeout=self.timeout, **kwargs
-            )
-        except _req.ConnectionError as exc:
-            raise ConnectionError(url, cause=exc) from exc
-        except _req.Timeout as exc:
-            raise ConnectionError(url, cause=exc) from exc
+        retries = 3
+        backoff_factor = 1.0
+        
+        for attempt in range(retries):
+            try:
+                resp = self._session.request(
+                    method, url, timeout=self.timeout, **kwargs
+                )
+            except (_req.ConnectionError, _req.Timeout) as exc:
+                if attempt < retries - 1:
+                    import time
+                    time.sleep(backoff_factor * (2 ** attempt))
+                    continue
+                raise ConnectionError(url, cause=exc) from exc
 
-        if resp.status_code == 404:
-            raise NotFoundError(resp.text)
-        if resp.status_code == 422:
-            raise ValidationError(resp.text)
-        if resp.status_code >= 500:
-            raise ServerError(resp.status_code, resp.text)
-        if not resp.ok:
-            raise MiniMLflowError(
-                f"HTTP {resp.status_code}: {resp.text}"
-            )
+            if resp.status_code == 404:
+                raise NotFoundError(resp.text)
+            if resp.status_code == 422:
+                raise ValidationError(resp.text)
+            if resp.status_code >= 500:
+                if attempt < retries - 1:
+                    import time
+                    time.sleep(backoff_factor * (2 ** attempt))
+                    continue
+                raise ServerError(resp.status_code, resp.text)
+            if not resp.ok:
+                raise MiniMLflowError(
+                    f"HTTP {resp.status_code}: {resp.text}"
+                )
 
-        return resp.json()
+            return resp.json()
 
     # Experiment API
     def set_experiment(self, name: str) -> dict:
@@ -202,6 +212,19 @@ class MiniMLflowClient:
             "POST",
             "/artifacts/log",
             json={"run_id": rid, "file_path": file_path},
+        )
+
+    def log_tag(
+        self, key: str, value: str, *, run_id: str | None = None
+    ) -> dict:
+        """Log a tag to the active (or specified) run."""
+        rid = run_id or (self._active_run and self._active_run.get("id"))
+        if not rid:
+            raise RuntimeError("No active run — call start_run() first")
+        return self._request(
+            "POST",
+            "/tag/log",
+            json={"run_id": rid, "key": key, "value": value},
         )
 
     # Context-manager support
