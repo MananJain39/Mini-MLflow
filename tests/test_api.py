@@ -51,7 +51,21 @@ class TestRunEndpoints:
         resp = api_client.get(f"/api/experiments/{exp_id}/runs")
         assert resp.status_code == 200
         assert isinstance(resp.json(), list)
+        assert isinstance(resp.json(), list)
         assert len(resp.json()) >= 1
+
+    def test_list_runs_pagination(self, api_client):
+        exp_id = self._create_experiment(api_client)
+        api_client.post("/api/run/start", json={"experiment_id": exp_id})
+        api_client.post("/api/run/start", json={"experiment_id": exp_id})
+        
+        # Test limit
+        resp1 = api_client.get(f"/api/experiments/{exp_id}/runs?limit=1")
+        assert len(resp1.json()) == 1
+        
+        # Test skip
+        resp2 = api_client.get(f"/api/experiments/{exp_id}/runs?skip=1")
+        assert len(resp2.json()) == 1
 
     def test_get_run_details(self, api_client):
         exp_id = self._create_experiment(api_client)
@@ -96,4 +110,11 @@ class TestLoggingEndpoints:
         assert resp.status_code == 200
         assert resp.json()["status"] == "ok"
 
-        
+    def test_log_tag(self, api_client):
+        run_id = self._start_run(api_client)
+        resp = api_client.post(
+            "/api/tag/log",
+            json={"run_id": run_id, "key": "model_type", "value": "xgboost"},
+        )
+        assert resp.status_code == 200
+        assert resp.json()["key"] == "model_type"
