@@ -1,7 +1,7 @@
 """Unit tests for the client exception hierarchy."""
 
 import pytest
-from client.exceptions import (
+from mini_mlflow.client.exceptions import (
     MiniMLflowError,
     ServerError,
     NotFoundError,
