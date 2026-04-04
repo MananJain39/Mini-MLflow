@@ -1,13 +1,13 @@
 from datetime import datetime, timezone
-from Server.DB.models import Experiment, Run, Param, Metric, Artifact
-from Server.DB.session import SessionLocal
+from mini_mlflow.Server.DB.models import Experiment, Run, Param, Metric, Artifact
+from mini_mlflow.Server.DB import session as db_session
 import os
 import shutil
 
 class Tracker:
 
     def get_or_create_experiment(self, name: str):
-        db = SessionLocal() # create a new session
+        db = db_session.SessionLocal() # create a new session
         try:
             exp = db.query(Experiment).filter_by(name = name).first()
             if exp:
@@ -22,7 +22,7 @@ class Tracker:
             db.close()
 
     def start_run(self, experiment_id:str):
-        db = SessionLocal()
+        db = db_session.SessionLocal()
         run = Run(experiment_id = experiment_id)
         db.add(run)
         db.commit()
@@ -31,7 +31,7 @@ class Tracker:
         return run
     
     def end_run(self, run_id:str):
-        db = SessionLocal()
+        db = db_session.SessionLocal()
         run = db.get(Run, run_id)
         if not run:
             raise ValueError(f"Run not found: {run_id}")
@@ -43,7 +43,7 @@ class Tracker:
         return run
 
     def log_param(self, run_id:str, key:str, value:str):
-        db = SessionLocal()
+        db = db_session.SessionLocal()
 
         run = db.get(Run, run_id)
         if not run:
@@ -57,7 +57,7 @@ class Tracker:
         return param
 
     def log_metric(self, run_id:str, key:str, value:float, step: int = 0):
-        db = SessionLocal()
+        db = db_session.SessionLocal()
         
         run = db.get(Run, run_id)
         if not run:
@@ -72,7 +72,7 @@ class Tracker:
 
     ARTIFACT_ROOT = "storage/artifacts"
     def log_artifact(self, run_id: str, file_path: str):
-        db = SessionLocal()
+        db = db_session.SessionLocal()
         run = db.get(Run, run_id)
         if not run:
             raise ValueError(f"Run not found: {run_id}")
@@ -94,3 +94,18 @@ class Tracker:
         db.refresh(artifact)
         db.close()
         return artifact
+
+    def log_tag(self, run_id: str, key: str, value: str):
+        db = db_session.SessionLocal()
+        try:
+            from mini_mlflow.Server.DB.models import Tag
+            run = db.get(Run, run_id)
+            if not run:
+                raise ValueError(f"Run not found: {run_id}")
+            tag = Tag(run_id=run_id, key=key, value=str(value))
+            db.add(tag)
+            db.commit()
+            db.refresh(tag)
+            return tag
+        finally:
+            db.close()

@@ -29,6 +29,7 @@ class Run(Base):
     params = relationship("Param", back_populates = "run")
     artifacts = relationship("Artifact", back_populates = "run")
     metrics = relationship("Metric", back_populates = "run")
+    tags = relationship("Tag", back_populates = "run")
 
 class Param(Base):
     __tablename__ = "params"
@@ -58,3 +59,11 @@ class Artifact(Base):
     run = relationship("Run", back_populates="artifacts")
 
         
+class Tag(Base):
+    __tablename__ = "tags"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    run_id = Column(String, ForeignKey("runs.id"))
+    key = Column(String)
+    value = Column(String)
+
+    run = relationship("Run", back_populates="tags")

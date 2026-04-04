@@ -1,14 +1,12 @@
 from fastapi import APIRouter
-from pydantic import BaseModel
-from Server.services.tracker import Tracker
+from mini_mlflow.Server.services.tracker import Tracker
+from mini_mlflow.Server.API.models import (
+    LogParamRequest, LogMetricRequest, LogArtifactRequest, ArtifactResponse,
+    LogTagRequest, TagResponse
+)
 
 router = APIRouter()
 tracker = Tracker()
-
-class LogParamRequest(BaseModel):
-    run_id: str
-    key: str
-    value: str
 
 @router.post("/param/log")
 def log_param(request: LogParamRequest):
@@ -19,26 +17,21 @@ def log_param(request: LogParamRequest):
         "status": "OK"
         }
 
-class LogMetric(BaseModel):
-    run_id: str
-    key: str
-    value: float
-    step: int = 0
-
 @router.post("/metric/log")
-def log_metric(request: LogMetric):
+def log_metric(request: LogMetricRequest):
     tracker.log_metric(request.run_id, request.key, request.value, request.step)
     return{
         "status": "ok"
     }
 
 
-class Logartifact(BaseModel):
-    run_id: str
-    file_path: str
 
-
-@router.post("/artifacts/log")
-def log_artifact(request: Logartifact):
+@router.post("/artifacts/log", response_model=ArtifactResponse)
+def log_artifact(request: LogArtifactRequest):
     artifact = tracker.log_artifact(request.run_id, request.file_path)
-    return {"path": artifact.path}
+    return ArtifactResponse(path=artifact.path)
+
+@router.post("/tag/log", response_model=TagResponse)
+def log_tag(request: LogTagRequest):
+    tag = tracker.log_tag(request.run_id, request.key, request.value)
+    return TagResponse(key=tag.key, value=tag.value)
