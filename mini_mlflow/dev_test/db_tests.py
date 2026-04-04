@@ -1,6 +1,6 @@
-from Server.DB.models import Artifact, Experiment, Metric, Param, Run
-from Server.DB.session import SessionLocal
-from Server.services.tracker import Tracker
+from mini_mlflow.Server.DB.models import Artifact, Experiment, Metric, Param, Run
+from mini_mlflow.Server.DB.session import SessionLocal
+from mini_mlflow.Server.services.tracker import Tracker
 
 
 def _cleanup_experiment(experiment_name: str):

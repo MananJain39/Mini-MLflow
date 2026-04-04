@@ -1,6 +1,6 @@
-from Server.DB.session import engine
-from Server.DB import models
-from Server.DB.models import Base
+from mini_mlflow.Server.DB.session import engine
+from mini_mlflow.Server.DB import models
+from mini_mlflow.Server.DB.models import Base
 
 Base.metadata.create_all(bind=engine)
 print("DB Created")

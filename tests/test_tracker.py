@@ -3,8 +3,8 @@
 from pathlib import Path
 
 import pytest
-from Server.services.tracker import Tracker
-from Server.DB.models import Experiment, Run, Param, Metric, Artifact
+from mini_mlflow.Server.services.tracker import Tracker
+from mini_mlflow.Server.DB.models import Experiment, Run, Param, Metric, Artifact
 
 
 @pytest.fixture()
