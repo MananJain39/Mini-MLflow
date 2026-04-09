@@ -19,6 +19,13 @@ setup(
         "dev": [
             "pytest>=8.0.0",
             "pytest-cov>=4.0.0",
+            "httpx",
+        ],
+        "examples": [
+            "scikit-learn",
+            "pandas",
+            "numpy",
+            "nltk"
         ]
     },
 )
