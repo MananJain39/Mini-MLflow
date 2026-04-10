@@ -1,5 +1,5 @@
-from mini_mlflow.Server.DB.models import Artifact, Experiment, Metric, Param, Run
-from mini_mlflow.Server.DB.session import SessionLocal
+from mini_mlflow.server.db.models import Artifact, Experiment, Metric, Param, Run
+from mini_mlflow.server.db.session import SessionLocal
 from mini_mlflow.client.tracking import set_experiment, start_run
 
 

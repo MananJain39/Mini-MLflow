@@ -1,11 +1,11 @@
 from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
-from mini_mlflow.Server.API.experiments import router as experiments_router
-from mini_mlflow.Server.API.runs import router as runs_router
-from mini_mlflow.Server.API.logging import router as logging_router
-from mini_mlflow.Server.health import router as health_router
-from mini_mlflow.Server.middleware import RequestIDMiddleware
-from mini_mlflow.Server.auth import get_api_key
+from mini_mlflow.server.api.experiments import router as experiments_router
+from mini_mlflow.server.api.runs import router as runs_router
+from mini_mlflow.server.api.logging import router as logging_router
+from mini_mlflow.server.core.health import router as health_router
+from mini_mlflow.server.core.middleware import RequestIDMiddleware
+from mini_mlflow.server.core.auth import get_api_key
 
 app = FastAPI()
 
