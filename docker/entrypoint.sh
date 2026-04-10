@@ -7,4 +7,4 @@ alembic upgrade head
 
 # Start server
 echo "Starting Uvicorn..."
-exec python -m uvicorn mini_mlflow.Server.main:app --host 0.0.0.0 --port 8000
+exec python -m uvicorn mini_mlflow.server.main:app --host 0.0.0.0 --port 8000

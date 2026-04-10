@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from mini_mlflow.Server.DB import session as db_session
+from mini_mlflow.server.db import session as db_session
 from sqlalchemy import text
 
 router = APIRouter()

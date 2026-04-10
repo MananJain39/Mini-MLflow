@@ -1,7 +1,7 @@
 import uuid
 import time
 from starlette.middleware.base import BaseHTTPMiddleware
-from mini_mlflow.Server.logger import logger
+from mini_mlflow.server.core.logger import logger
 
 class RequestIDMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request, call_next):

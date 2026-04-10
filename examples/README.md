@@ -18,7 +18,7 @@ Make sure your local Mini-MLflow server is running before executing these script
 
 In a terminal, start the server:
 ```bash
-uvicorn mini_mlflow.Server.main:app --reload
+uvicorn mini_mlflow.server.main:app --reload
 ```
 
 Then in a separate terminal window, simply execute the example scripts:

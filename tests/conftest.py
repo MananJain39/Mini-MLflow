@@ -22,8 +22,8 @@ if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
 # 3. NOW import the session module (picks up the env-var URL).
-from mini_mlflow.Server.DB.session import Base, SessionLocal, engine  # noqa: E402
-from mini_mlflow.Server.DB import models as _models  # noqa: E402  — registers tables
+from mini_mlflow.server.db.session import Base, SessionLocal, engine  # noqa: E402
+from mini_mlflow.server.db import models as _models  # noqa: E402  — registers tables
 
 
 @pytest.fixture(autouse=True)
@@ -48,5 +48,5 @@ def db():
 def api_client():
     """FastAPI TestClient — imported lazily so the DB env is already set."""
     from fastapi.testclient import TestClient
-    from mini_mlflow.Server.main import app
+    from mini_mlflow.server.main import app
     return TestClient(app)
