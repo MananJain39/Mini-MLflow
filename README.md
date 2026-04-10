@@ -36,11 +36,16 @@ flowchart TD
         Middleware --> Routing
     end
 
+    subgraph Business Logic Layer
+        Services["Domain Services\n(RunService, etc.)"]
+        Routing --> Services
+    end
+
     subgraph Data Access Layer
         ORM["SQLAlchemy ORM"]
         Alembic["Alembic Migrations"]
         
-        Routing --> ORM
+        Services --> ORM
         ORM <--> Alembic
     end
 
@@ -49,7 +54,7 @@ flowchart TD
         LocalFileSystem[/"Local File Storage\n(Artifacts/Models)"/]
         
         ORM --> PostgreSQL
-        Routing --> LocalFileSystem
+        Services --> LocalFileSystem
     end
 ```
 
@@ -72,7 +77,7 @@ docker-compose up -d
 ```
 Alternatively, run the server natively using `uvicorn` (requires a configured PostgreSQL connection string in the environment):
 ```bash
-python -m uvicorn mini_mlflow.Server.main:app --reload --host 127.0.0.1 --port 8000
+python -m uvicorn mini_mlflow.server.main:app --reload --host 127.0.0.1 --port 8000
 ```
 Visit `http://127.0.0.1:8000/docs` to view the interactive API documentation.
 
@@ -104,4 +109,22 @@ print("Run completed securely and efficiently!")
 To verify the installation and system health, run the automated test suite using `pytest`:
 ```bash
 python -m pytest --cov=mini_mlflow
+```
+
+### End-to-End Testing
+
+To run the end-to-end testing baseline that validates full workflows (like Housing Price Regression and Sentiment Classification), use:
+```bash
+python -m pytest tests/e2e -v
+```
+
+## End-to-End Examples
+
+Mini-MLflow provides ready-to-use E2E examples showcasing how to integrate with real machine learning datasets and models. Check out the `examples/` directory for scripts including:
+- **Housing Price Regression**: Demonstrates tracking a custom tabular regression model.
+- **Sentiment Classification**: Demonstrates tracking a binary text classification model.
+
+To run an example locally against a running server:
+```bash
+python examples/housing_regression.py
 ```

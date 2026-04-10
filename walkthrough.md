@@ -20,7 +20,7 @@ The server is built with FastAPI. You can start it using `uvicorn`. This must be
 
 ```bash
 # Start the server with hot-reload enabled
-python -m uvicorn mini_mlflow.Server.main:app --reload --host 127.0.0.1 --port 8000
+python -m uvicorn mini_mlflow.server.main:app --reload --host 127.0.0.1 --port 8000
 ```
 *The server will be available at `http://127.0.0.1:8000`. You can visit `http://127.0.0.1:8000/docs` to see the interactive Swagger API documentation.*
 
